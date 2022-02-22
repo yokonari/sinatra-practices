@@ -1,5 +1,5 @@
 <div class="main">
-  <h3><%= @title %></h3>
+  <h3><%= h @title %></h3>
   <p>
     <% body = (h @body) %>
     <%= body.gsub(/(\r\n|\r|\n)/, "<br>") %>
