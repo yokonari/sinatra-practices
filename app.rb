@@ -57,7 +57,7 @@ post '/memos/new' do
        end
 
   Data.write(id, params)
-  redirect "/memos/#{id}"
+  redirect "/memos/#{id.to_i}"
 end
 
 get '/memos/edit/*' do |id|
