@@ -62,7 +62,7 @@ end
 
 get '/memos/edit/*' do |id|
   memo = Data.read(id)
-  assign_to_instance(**memo)
+  assign_to_instance(memo)
   erb :edit
 end
 
@@ -73,7 +73,7 @@ end
 
 get '/memos/*' do |id|
   memo = Data.read(id)
-  assign_to_instance(**memo)
+  assign_to_instance(memo)
   erb :memo
 end
 
