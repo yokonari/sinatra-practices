@@ -7,13 +7,10 @@
 
   <h2>メモ一覧</h2>
   <ul>
-    <% @memos.reverse_each do |file_name| %>
-    <% File.open("#{file_name}", "r") do |file| %>
-    <% memo = JSON.parse(file.read, symbolize_names: true) %>
+    <% @memos_all.reverse_each do |memo| %>
     <li>
       <a href=<%= "./memos/#{memo[:id]}" %> class="list"><%= memo[:title] %></a>
     </li>
-    <% end %>
     <% end %>
   </ul>
 </div>
