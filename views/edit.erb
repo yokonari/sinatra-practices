@@ -1,0 +1,15 @@
+<div class="main">
+  <div class="memo-form">
+    <form method="post" action="/memos/<%= @id %>">
+      <div class="form-items">
+        <input type="text" name="title" value="<%= @title %>">
+      </div>
+      <div class="form-items">
+        <textarea name="body"><%= @body %></textarea>
+      </div>
+      <div class="submit-button">
+        <button name="_method" type="hidden" value="patch">変更</button>
+      </div>
+    </form>
+  </div>
+</div>

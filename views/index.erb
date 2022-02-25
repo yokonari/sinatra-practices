@@ -1,0 +1,16 @@
+<div class="main">
+  <div class="head">
+    <div class="new-button">
+      <a href="./memos/new">新しいメモをつくる</a>
+    </div>
+  </div>
+
+  <h2>メモ一覧</h2>
+  <ul>
+    <% @memos_all.reverse_each do |memo| %>
+    <li>
+      <a href=<%= "./memos/#{memo[:id]}" %> class="list"><%= h memo[:title] %></a>
+    </li>
+    <% end %>
+  </ul>
+</div>

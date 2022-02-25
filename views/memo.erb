@@ -1,0 +1,21 @@
+<div class="main">
+  <h3><%= h @title %></h3>
+  <p>
+    <% body = (h @body) %>
+    <%= body.gsub(/(\r\n|\r|\n)/, "<br>") %>
+  </p>
+</div>
+
+<div class="button-list">
+  <div class="other-button">
+    <a href="/memos">メモ一覧</a>
+  </div>
+
+  <div class="other-button">
+    <a href="/memos/edit/<%= @id %>">変更</a>
+  </div>
+
+  <form method="post" action="/memos/<%= @id %>">
+    <button name="_method" type="hidden" value="delete" />削除</button>
+  </form>
+</div>
