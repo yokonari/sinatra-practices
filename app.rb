@@ -4,13 +4,13 @@ require 'sinatra'
 require 'sinatra/reloader'
 require 'pg'
 
-class Data
-  db = 'memo'
-  user = 'yokonari'
-  password = 'app'
+class Memo
+  db = ENV["PGDATABASE"]
+  user = ENV["PGUSER"]
+  password = ENV["PGPASSWORD"]
   CONNECTION = PG.connect(dbname: db, user: user, password: password)
 
-  def self.show
+  def self.all
     CONNECTION.exec(
       "create table if not exists memos
       (id serial not null primary key,
@@ -26,7 +26,7 @@ class Data
     )
   end
 
-  def self.write(params)
+  def self.new(params)
     title = params[:title]
     body = params[:body]
 
@@ -65,7 +65,7 @@ def assign_to_instance(result)
 end
 
 get '/memos' do
-  @memos_all = Data.show
+  @memos_all = Memo.all
   erb :index
 end
 
@@ -74,7 +74,7 @@ get '/memos/new' do
 end
 
 post '/memos/new' do
-  result = Data.write(params)
+  result = Memo.new(params)
   result.each do |row|
     id = row['id']
     redirect "/memos/#{id.to_i}"
@@ -82,25 +82,25 @@ post '/memos/new' do
 end
 
 get '/memos/edit/*' do |id|
-  result = Data.read(id)
+  result = Memo.read(id)
   assign_to_instance(result)
   erb :edit
 end
 
 patch '/memos/*' do |id|
-  Data.edit(id, params)
+  Memo.edit(id, params)
   redirect "/memos/#{id.to_i}"
 end
 
 get '/memos/*' do |id|
-  result = Data.read(id)
+  result = Memo.read(id)
   assign_to_instance(result)
   redirect 404 if @id.empty?
   erb :memo
 end
 
 delete '/memos/*' do |id|
-  Data.delete(id)
+  Memo.delete(id)
   redirect '/memos'
 end
 
@@ -109,8 +109,8 @@ helpers do
   alias_method :h, :escape_html
 end
 
-set :show_exceptions, :after_handler
+# set :show_exceptions, :after_handler
 
-error 400..510 do
-  erb :oops
-end
+# error 400..510 do
+#   erb :oops
+# end
