@@ -5,18 +5,23 @@ require 'sinatra/reloader'
 require 'pg'
 
 class Memo
-  db = ENV["PGDATABASE"]
-  user = ENV["PGUSER"]
-  password = ENV["PGPASSWORD"]
+  db = ENV['PGDATABASE']
+  user = ENV['PGUSER']
+  password = ENV['PGPASSWORD']
   CONNECTION = PG.connect(dbname: db, user: user, password: password)
 
-  def self.all
+  def self.create_table
     CONNECTION.exec(
       "create table if not exists memos
       (id serial not null primary key,
       title text not null,
-      body text);
-      select id,title from memos;"
+      body text);"
+    )
+  end
+
+  def self.all
+    CONNECTION.exec(
+      'select id,title from memos;'
     )
   end
 
@@ -57,11 +62,15 @@ class Memo
 end
 
 def assign_to_instance(result)
+  array = []
   result.each do |row|
-    @id = row['id']
-    @title = row['title']
-    @body = row['body']
+    array << row['id'] << row['title'] << row['body']
   end
+  @memo = %w[id title body].zip(array).to_h
+end
+
+before '/memos' do
+  Memo.create_table
 end
 
 get '/memos' do
@@ -95,7 +104,7 @@ end
 get '/memos/*' do |id|
   result = Memo.read(id)
   assign_to_instance(result)
-  redirect 404 if @id.empty?
+  redirect 404 if @memo['id'].empty?
   erb :memo
 end
 
@@ -109,8 +118,8 @@ helpers do
   alias_method :h, :escape_html
 end
 
-# set :show_exceptions, :after_handler
+set :show_exceptions, :after_handler
 
-# error 400..510 do
-#   erb :oops
-# end
+error 400..510 do
+  erb :oops
+end

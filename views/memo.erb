@@ -1,7 +1,7 @@
 <div class="main">
-  <h3><%= h @title %></h3>
+  <h3><%= h @memo['title'] %></h3>
   <p>
-    <% body = (h @body) %>
+    <% body = (h @memo['body']) %>
     <%= body.gsub(/(\r\n|\r|\n)/, "<br>") %>
   </p>
 </div>
@@ -12,10 +12,10 @@
   </div>
 
   <div class="other-button">
-    <a href="/memos/edit/<%= @id %>">変更</a>
+    <a href="/memos/edit/<%= @memo['id'] %>">変更</a>
   </div>
 
-  <form method="post" action="/memos/<%= @id %>">
+  <form method="post" action="/memos/<%= @memo['id'] %>">
     <button name="_method" type="hidden" value="delete" />削除</button>
   </form>
 </div>

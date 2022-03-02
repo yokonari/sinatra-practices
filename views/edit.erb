@@ -1,11 +1,11 @@
 <div class="main">
   <div class="memo-form">
-    <form method="post" action="/memos/<%= @id %>">
+    <form method="post" action="/memos/<%= @memo['id'] %>">
       <div class="form-items">
-        <input type="text" name="title" value="<%= h @title %>">
+        <input type="text" name="title" value="<%= h @memo['title'] %>">
       </div>
       <div class="form-items">
-        <textarea name="body"><%= h @body %></textarea>
+        <textarea name="body"><%= h @memo['body'] %></textarea>
       </div>
       <div class="submit-button">
         <button name="_method" type="hidden" value="patch">変更</button>
