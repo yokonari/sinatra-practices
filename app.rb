@@ -2,46 +2,79 @@
 
 require 'sinatra'
 require 'sinatra/reloader'
-require 'json'
+require 'pg'
 
-class Data
-  def self.read(id)
-    File.open("./json/memos#{id.to_i}.json", 'r') do |file|
-      JSON.parse(file.read, symbolize_names: true)
-    end
+class Memo
+  db = ENV['PGDATABASE']
+  user = ENV['PGUSER']
+  password = ENV['PGPASSWORD']
+  CONNECTION = PG.connect(dbname: db, user: user, password: password)
+
+  def self.create_table
+    CONNECTION.exec(
+      "create table if not exists memos
+      (id serial not null primary key,
+      title text not null,
+      body text);"
+    )
   end
 
-  def self.write(id, params)
-    data = {
-      id: id,
-      title: params[:title],
-      body: params[:body]
-    }
-    memo_json = data.to_json
+  def self.all
+    CONNECTION.exec(
+      'select id,title from memos;'
+    )
+  end
 
-    File.open("./json/memos#{id.to_i}.json", 'w') do |file|
-      file.puts(memo_json.to_s)
-    end
+  def self.read(id)
+    CONNECTION.exec_params(
+      'select * from memos where id = $1;', [id]
+    )
+  end
+
+  def self.new(params)
+    title = params[:title]
+    body = params[:body]
+
+    CONNECTION.exec_params(
+      "insert into memos(title,body) values ($1, $2)
+      returning id;",
+      [title, body]
+    )
+  end
+
+  def self.edit(id, params)
+    title = params[:title]
+    body = params[:body]
+
+    CONNECTION.exec_params(
+      "update memos set
+      title = $1, body = $2 where id = $3;",
+      [title, body, id]
+    )
   end
 
   def self.delete(id)
-    File.delete("./json/memos#{id.to_i}.json")
+    CONNECTION.exec_params(
+      'delete from memos where id = $1;',
+      [id]
+    )
   end
 end
 
-def assign_to_instance(memo)
-  @id = memo[:id]
-  @title = memo[:title]
-  @body = memo[:body]
+def assign_to_instance(result)
+  array = []
+  result.each do |row|
+    array << row['id'] << row['title'] << row['body']
+  end
+  @memo = %w[id title body].zip(array).to_h
+end
+
+before '/memos' do
+  Memo.create_table
 end
 
 get '/memos' do
-  memos = Dir.glob('./json/*.json')
-  @memos_all = memos.map do |file|
-    File.open(file.to_s, 'r') do |memo|
-      JSON.parse(memo.read, symbolize_names: true)
-    end
-  end
+  @memos_all = Memo.all
   erb :index
 end
 
@@ -50,35 +83,33 @@ get '/memos/new' do
 end
 
 post '/memos/new' do
-  id = if Dir.empty?('./json')
-         1
-       else
-         Dir.glob('./json/*.json').max.delete('^0-9').to_i + 1
-       end
-
-  Data.write(id, params)
-  redirect "/memos/#{id.to_i}"
+  result = Memo.new(params)
+  result.each do |row|
+    id = row['id']
+    redirect "/memos/#{id.to_i}"
+  end
 end
 
 get '/memos/edit/*' do |id|
-  memo = Data.read(id)
-  assign_to_instance(memo)
+  result = Memo.read(id)
+  assign_to_instance(result)
   erb :edit
 end
 
 patch '/memos/*' do |id|
-  Data.write(id, params)
+  Memo.edit(id, params)
   redirect "/memos/#{id.to_i}"
 end
 
 get '/memos/*' do |id|
-  memo = Data.read(id)
-  assign_to_instance(memo)
+  result = Memo.read(id)
+  assign_to_instance(result)
+  redirect 404 if @memo['id'].empty?
   erb :memo
 end
 
 delete '/memos/*' do |id|
-  Data.delete(id)
+  Memo.delete(id)
   redirect '/memos'
 end
 

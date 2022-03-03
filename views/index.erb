@@ -9,7 +9,7 @@
   <ul>
     <% @memos_all.reverse_each do |memo| %>
     <li>
-      <a href=<%= "./memos/#{memo[:id]}" %> class="list"><%= h memo[:title] %></a>
+      <a href=<%= "./memos/#{memo["id"]}" %> class="list"><%= h memo["title"] %></a>
     </li>
     <% end %>
   </ul>
